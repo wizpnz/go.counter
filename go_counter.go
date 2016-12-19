@@ -63,8 +63,7 @@ func readData(chanUrls chan<- string) (urlsCount int) {
 //Wait for execution flow finished
 func waitExecutionFinished(chanFinished <-chan int) {
 	for {
-		_, ok := <-chanFinished
-		if !ok {
+		if _, ok := <-chanFinished; !ok {
 			break
 		}
 	}

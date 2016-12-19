@@ -4,7 +4,9 @@ This code counts nubmer of "Go" on provided urls.
 ## Building
 go.counteruses standard go building routine, checkout [golang page](https://golang.org/doc/code.html).  
 Code should be located at `$GOPATH/src/github.com/wizpnz/go.counter`.
+```
 go get github.com/wizpnz/go.counter
+```
 
 ### Step by step
 0. Install 'go', see [golang installation guide](https://golang.org/doc/install).
@@ -21,9 +23,9 @@ go install
 ```
 
 ##Run
-Run from command line
+Run from command line. Put urls to stdin
 ```
 Use -log to enable logging to stdout (stderr is default)
 ```
-put urls to stdin
+
 

@@ -134,7 +134,7 @@ func getHTMLBody(url string, chanResponse chan<- http.Response, chanErrors chan<
 	if err == nil {
 		chanResponse <- *res
 	} else {
-		log.Printf("Failed to get data from %s err: %s", url, err)
+		fmt.Printf("Failed to get data from %s err: %s\n", url, err)
 		chanErrors <- true
 	}
 	log.Println("getHTMLBody finished")
@@ -147,7 +147,7 @@ func processResponse(chanRes <-chan http.Response, chanResult chan<- int, chanEr
 	res := <-chanRes
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		log.Printf("Failed to get Body from %s err: %s", res, err)
+		fmt.Printf("Failed to get Body from %s err: %s\n", res, err)
 		chanErrors <- true
 	} else {
 		re := regexp.MustCompile("Go")

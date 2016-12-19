@@ -151,7 +151,6 @@ func processResponse(chanRes <-chan http.Response, chanResult chan<- int, chanEr
 		chanErrors <- true
 	} else {
 		re := regexp.MustCompile("Go")
-		//matches := re.FindAll(body, -1)
 		matches := re.FindAllString(string(body), -1)
 		fmt.Printf("Count for %s: %d\n", res.Request.URL, len(matches))
 		chanResult <- len(matches)

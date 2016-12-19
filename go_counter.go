@@ -1,7 +1,26 @@
+//This porgram counts GO's in provided urls
+//Copyright (C) Vadim.Karasev 2016
+//
+//This program is free software: you can redistribute it and/or modify
+//it under the terms of the GNU General Public License as published by
+//the Free Software Foundation, either version 3 of the License, or
+//(at your option) any later version.
+//
+//This program is distributed in the hope that it will be useful,
+//but WITHOUT ANY WARRANTY; without even the implied warranty of
+//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//GNU General Public License for more details.
+//
+//You should have received a copy of the GNU General Public License
+//along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Package main implements small utils, that get urls, parse body and count 'Go' with regexp.
+// It uses chanels for interactions between modules.
 package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -9,15 +28,15 @@ import (
 	"os"
 	"os/signal"
 	"regexp"
-	"flag"
 )
 
+//Init flags. Only one for current moment: enable or disable logging
 func init() {
-    enableLog := flag.Bool("log", false, "Enable or disable logging. It's useful to check workers count")
-    flag.Parse()
-    if !(*enableLog) {
-	    log.SetOutput(ioutil.Discard)
-    }
+	enableLog := flag.Bool("log", false, "Enable or disable logging. It's useful to check workers count")
+	flag.Parse()
+	if !(*enableLog) {
+		log.SetOutput(ioutil.Discard)
+	}
 }
 
 func main() {
@@ -28,18 +47,20 @@ func main() {
 	go controlExecuteFlow(chanUrls, chanFinished, simultaneouslyUrlsCount)
 	chanFinished <- readData(chanUrls)
 	close(chanUrls)
- 	waitExecutionFinished(chanFinished)
+	waitExecutionFinished(chanFinished)
 }
 
+//Read data from stdin
 func readData(chanUrls chan<- string) (urlsCount int) {
 	s := bufio.NewScanner(os.Stdin)
 	for s.Scan() {
 		chanUrls <- s.Text()
 		urlsCount++
 	}
-	return  urlsCount
+	return urlsCount
 }
 
+//Wait for execution flow finished
 func waitExecutionFinished(chanFinished <-chan int) {
 	for {
 		_, ok := <-chanFinished
@@ -49,7 +70,7 @@ func waitExecutionFinished(chanFinished <-chan int) {
 	}
 }
 
-
+//Execute control. All real work is here
 func controlExecuteFlow(chanUrls <-chan string, chanFinished chan int, workers int) {
 
 	chanResponse := make(chan http.Response)
@@ -106,11 +127,12 @@ func controlExecuteFlow(chanUrls <-chan string, chanFinished chan int, workers i
 	close(chanFinished)
 }
 
-func getHTMLBody(url string, chanRes chan<- http.Response, chanErrors chan<- bool) {
+//Get HTML body by url and provide it to Response chanel
+func getHTMLBody(url string, chanResponse chan<- http.Response, chanErrors chan<- bool) {
 	log.Println("getHTMLBody Started")
 	res, err := http.DefaultClient.Get(url)
 	if err == nil {
-		chanRes <- *res
+		chanResponse <- *res
 	} else {
 		log.Printf("Failed to get data from %s err: %s", url, err)
 		chanErrors <- true
@@ -119,6 +141,7 @@ func getHTMLBody(url string, chanRes chan<- http.Response, chanErrors chan<- boo
 	return
 }
 
+//Data processor. It searches for 'Go''s in HTML body by regexp 'Go'
 func processResponse(chanRes <-chan http.Response, chanResult chan<- int, chanErrors chan<- bool) {
 	log.Println("processResponse Started")
 	res := <-chanRes
@@ -136,4 +159,3 @@ func processResponse(chanRes <-chan http.Response, chanResult chan<- int, chanEr
 	log.Println("processResponse finished")
 	return
 }
-
